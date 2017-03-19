@@ -24,6 +24,8 @@ before_install:
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 50
 
 install:
+    # Install conan
+    - pip install conan
     # Installing lcov
     - cd ${TRAVIS_BUILD_DIR}
     - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.13.orig.tar.gz
