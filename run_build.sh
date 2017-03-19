@@ -29,8 +29,8 @@ if [ $? -ne 0 ]; then
 fi
 
 showinfo "Running tests ..."
-make -j8 Example_coverage
-../bin/ratl-test
+make -j8 ratl-coverage
+.bin/ratl-test
 if [ $? -ne 0 ]; then
     error "Error: there are failed tests!"
     exit 4
