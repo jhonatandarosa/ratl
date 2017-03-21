@@ -1,5 +1,15 @@
 #include <ratl/rest/Resource.h>
+#ifdef _USE_BOOST_REGEX
+#include <boost/regex.hpp>
+namespace std {
+    using boost::regex;
+    using boost::smatch;
+//    using boost::regex_search;
+    using boost::regex_match;
+}
+#else
 #include <regex>
+#endif
 
 using ratl::rest::Resource;
 
@@ -24,9 +34,7 @@ std::string Resource::param(int idx) const noexcept {
 
 std::string Resource::createPattern() noexcept {
     using std::regex;
-    using std::sregex_token_iterator;
     using std::smatch;
-    using std::regex_search;
 
     auto start = uri.cbegin();
     auto end   = uri.cend();

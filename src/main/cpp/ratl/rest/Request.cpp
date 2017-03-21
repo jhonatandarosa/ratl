@@ -1,7 +1,14 @@
 #include <ratl/rest/Request.h>
 
-//#include <boost/regex.hpp>
+#ifdef _USE_BOOST_REGEX
+#include <boost/regex.hpp>
+namespace std {
+    using boost::regex;
+    using boost::smatch;
+}
+#else
 #include <regex>
+#endif
 #include "Resource.h"
 
 using namespace ratl::rest;
@@ -23,10 +30,7 @@ void Request::init(const ratl::rest::Resource& resource) noexcept {
     assert(resource.match(uri_));
 
     using std::regex;
-    using std::sregex_token_iterator;
     using std::smatch;
-    using std::regex_search;
-    using std::regex_match;
 
     smatch matches;
     if (regex_match(uri_, matches, regex{resource.pattern})){

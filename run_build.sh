@@ -12,10 +12,6 @@ workingprocess() { echo -e "${BB}$1${NC}"; }
 allert () { echo -e "${RED}$1${NC}"; }
 
 # Building project
-mkdir -p cmake-build-debug
-# run conan
-./conan_install.sh Debug
-cd cmake-build-debug
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 make -j8
 # Checks if last comand didn't output 0
