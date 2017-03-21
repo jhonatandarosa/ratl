@@ -55,9 +55,6 @@ function(conan_install)
     endif ()
 
     # compiler version
-    string(REGEX REPLACE <regular_expression>
-            <replace_expression> <output variable>
-            <input> [<input>...])
     string(REGEX REPLACE
             "([1-9]+\\.[0-9]+)(.*)"
             "\\1"

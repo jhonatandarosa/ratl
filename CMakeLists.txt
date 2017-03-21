@@ -14,6 +14,7 @@ conan_add_package(
     Boost 1.60.0 lasote stable
     fPIC=True
     without_regex=False
+
     without_atomic=True
     without_chrono=True
     without_container=True
