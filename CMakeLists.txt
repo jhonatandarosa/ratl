@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.2.2)
 
+add_subdirectory(server-impls)
+add_subdirectory(examples)
+
 project(ratl)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)

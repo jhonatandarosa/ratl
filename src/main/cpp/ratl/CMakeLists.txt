@@ -1,4 +1,5 @@
 add_source_directory(rest SRCS HDRS)
+add_source_directory(server SRCS HDRS)
 
 file(GLOB headers *.h)
 set(HDRS ${HDRS} ${headers})
