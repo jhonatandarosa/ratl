@@ -1,6 +1,6 @@
 project(basicserver CXX)
 
-
+set(CMAKE_CXX_STANDARD 11)
 set(SRCS
     main.cpp
 )
