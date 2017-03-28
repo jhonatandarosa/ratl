@@ -1,3 +1,13 @@
+function(_conan_clear_configs)
+    set(CI_PKGS "" CACHE INTERNAL "Conan Install Packages" FORCE)
+    set(CI_PKGS_OPTS "" CACHE INTERNAL "Conan Install Packages Options" FORCE)
+endfunction()
+
+function(conan_init_config)
+    message("Conan init config for project ${PROJECT_NAME}")
+    _conan_clear_configs()
+endfunction()
+
 function(conan_add_package PACKAGE VERSION AUTHOR CHANNEL)
     list(APPEND CI_PKGS "${PACKAGE}/${VERSION}@${AUTHOR}/${CHANNEL}")
     list(REMOVE_DUPLICATES CI_PKGS)
@@ -13,6 +23,7 @@ function(conan_add_package PACKAGE VERSION AUTHOR CHANNEL)
 endfunction()
 
 function(conan_gen_conanfile CONANFILE)
+    message("Generating conanfile for project ${PROJECT_NAME}")
     # [requires] section
     file(WRITE  ${CONANFILE} "[requires]\n")
     foreach(PKG ${CI_PKGS})
@@ -35,6 +46,7 @@ function(conan_gen_conanfile CONANFILE)
 endfunction()
 
 function(conan_install)
+    message("Conan install project ${PROJECT_NAME}")
     set(options BUILD_MISSING FAST)
     #    set(oneValueArgs DESTINATION RENAME)
     #    set(multiValueArgs TARGETS CONFIGURATIONS)
@@ -73,7 +85,7 @@ function(conan_install)
 
     ########    compiler settings    ########
     #########################################
-    set(CI_CONANFILE "${CMAKE_SOURCE_DIR}/conanfile.txt")
+    set(CI_CONANFILE "${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt")
 
     if(NOT EXISTS ${CI_CONANFILE})
         conan_gen_conanfile(${CI_CONANFILE})
@@ -85,8 +97,8 @@ function(conan_install)
     endif ()
 
     execute_process(
-            COMMAND conan install .. ${CI_ARGS}
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMAND conan install ${PROJECT_SOURCE_DIR} ${CI_ARGS}
+            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
             RESULT_VARIABLE EXIT_CODE
     )
 
@@ -97,4 +109,5 @@ function(conan_install)
     if (NOT ${EXIT_CODE} EQUAL 0)
         message(FATAL_ERROR "Conan install failed with exit code ${EXIT_CODE}")
     endif()
+    _conan_clear_configs()
 endfunction()

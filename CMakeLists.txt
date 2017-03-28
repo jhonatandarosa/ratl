@@ -9,8 +9,9 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include(SourcesDirectories)
 include(ConanUtils)
 
-conan_add_package(catch 1.5.0 TyRoXx stable)
+conan_init_config()
 conan_add_package(nlJson 2.0.1 arnemertz testing)
+
 
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
 conan_add_package(
@@ -50,7 +51,7 @@ add_definitions(-D_USE_BOOST_REGEX=1)
 endif()
 conan_install(BUILD_MISSING)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+include(${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
 set(CMAKE_CXX_STANDARD 11)
