@@ -2,20 +2,27 @@
 
 #include <type_traits>
 #include <string>
+#include <memory>
+#include <stdexcept>
 
 #include <ratl/server/NetIO.h>
 
 namespace ratl {
     namespace server {
-        template <class NetIOLayer>
         class RestServer {
-            static_assert(std::is_base_of<NetIO, NetIOLayer>::value, "NetIOLayer must implement NetIO interface");
-
         public:
-            ~RestServer() {};
+            RestServer(const std::shared_ptr<NetIO>& netIO);
+
             void bind(const std::string& address, const int port);
-            void start();
-            void stop();
+            void run() throw(std::logic_error);
+            void stop() throw(std::logic_error);
+
+            const bool isRunning() const noexcept;
+
+        private:
+            std::shared_ptr<NetIO> netIO;
+            bool bound;
+            bool running;
         };
 
     }

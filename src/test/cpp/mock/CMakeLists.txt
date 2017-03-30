@@ -2,8 +2,7 @@ file(GLOB HDRS *.h)
 set(HDRS ${HDRS})
 
 set(
-        SRCS
-        MockNetIO.cpp
+    SRCS
 )
 
 

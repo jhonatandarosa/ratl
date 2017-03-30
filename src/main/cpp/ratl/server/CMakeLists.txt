@@ -3,8 +3,9 @@ file(GLOB HDRS *.h)
 set(HDRS ${HDRS})
 
 set(
-    SRCS
-    RestServer.cpp
+        SRCS
+        RestServer.cpp
+        NetIO.cpp
 )
 
 
