@@ -2,4 +2,4 @@
 
 using ratl::server::NetIO;
 
-NetIO::~NetIO() {}
+//NetIO::~NetIO() {}

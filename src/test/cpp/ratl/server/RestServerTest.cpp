@@ -13,7 +13,6 @@ using ::testing::NiceMock;
 TEST_CASE( "ServerTest" ) {
 
     SECTION("Bind a server to an available address and port") {
-
         auto netIO = std::make_shared<MockNetIO>();
         EXPECT_CALL(*netIO, bind("localhost", 8000)).Times(1);
 
@@ -66,7 +65,7 @@ TEST_CASE( "ServerTest" ) {
     SECTION("Stop a server that started successfully and is running") {
         auto netIO = std::make_shared<NiceMock<MockNetIO>>();
         EXPECT_CALL(*netIO, stop()).Times(1);
-        
+
         RestServer server{netIO};
         server.bind("localhost", 8000);
 
