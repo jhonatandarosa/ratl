@@ -11,7 +11,7 @@ RestAPI::RestAPI()
 {
 }
 
-Response RestAPI::process(const Request &request) const noexcept {
+Response RestAPI::process(const Request &request) noexcept {
 
     for (auto const& resource : _resources) {
         if (resource->match(request.uri_)) {

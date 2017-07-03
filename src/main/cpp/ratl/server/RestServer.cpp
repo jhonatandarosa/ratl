@@ -1,5 +1,7 @@
 #include <ratl/server/RestServer.h>
 
+#include <ratl/server/RequestHandler.h>
+
 using ratl::server::RestServer;
 using ratl::server::NetIO;
 
@@ -8,6 +10,7 @@ RestServer::RestServer(const std::shared_ptr<NetIO>& netIO)
     : netIO{netIO}
     , bound{}
     , running{}
+    , handler{}
 {
 }
 
@@ -20,8 +23,11 @@ void RestServer::run() throw(std::logic_error) {
     if (!bound) {
         throw std::logic_error{"Server not bound to an address"};
     }
-    netIO->run();
+    if (!handler) {
+        throw std::logic_error{"Handler not configured"};
+    }
     running = true;
+    netIO->run();
 }
 
 void RestServer::stop() throw(std::logic_error) {
@@ -35,4 +41,10 @@ void RestServer::stop() throw(std::logic_error) {
 
 const bool RestServer::isRunning() const noexcept {
     return running;
+}
+
+
+void RestServer::use(std::unique_ptr<ratl::server::RequestHandler> handler) noexcept {
+    this->handler = std::move(handler);
+    netIO->setRequestHandler(this->handler);
 }

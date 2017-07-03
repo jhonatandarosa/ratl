@@ -9,15 +9,17 @@
 #include <ratl/rest/Response.h>
 #include <ratl/rest/Router.h>
 
+#include <ratl/server/RequestHandler.h>
+
 namespace ratl {
     namespace rest {
 
-        class RestAPI {
+        class RestAPI : public ratl::server::RequestHandler {
 
         public:
             RestAPI();
 
-            Response process(const Request& request) const noexcept ;
+            Response process(const Request& request) noexcept override ;
 
             void use(std::unique_ptr<ratl::rest::Router>&& router) noexcept ;
 

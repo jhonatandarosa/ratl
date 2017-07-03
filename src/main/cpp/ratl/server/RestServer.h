@@ -4,11 +4,20 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
+#include <vector>
 
 #include <ratl/server/NetIO.h>
 
 namespace ratl {
+    namespace rest {
+        class Request;
+        class Response;
+    }
+
     namespace server {
+
+        class RequestHandler;
+
         class RestServer {
         public:
             RestServer(const std::shared_ptr<NetIO>& netIO);
@@ -19,10 +28,13 @@ namespace ratl {
 
             const bool isRunning() const noexcept;
 
+            void use(std::unique_ptr<ratl::server::RequestHandler> handler) noexcept ;
+
         private:
             std::shared_ptr<NetIO> netIO;
             bool bound;
             bool running;
+            std::shared_ptr<ratl::server::RequestHandler> handler;
         };
 
     }

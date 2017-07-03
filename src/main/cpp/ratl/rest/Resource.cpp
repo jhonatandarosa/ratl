@@ -61,6 +61,8 @@ std::string Resource::createPattern() noexcept {
         }
         start = what[0].second;
     }
-
+    if (pattern.empty()) {
+        pattern = "/";
+    }
     return pattern;
 }

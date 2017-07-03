@@ -33,4 +33,21 @@ TEST_CASE( "RequestTest" ) {
         CHECK(request.getParameter<std::string>("id") == "123");
     }
 
+    SECTION("Requests on '/' must work") {
+
+        const std::string uri = "/";
+        ratl::rest::Resource resource{"/", "GET", RequestTest::default_handler};
+        CHECK(resource.match(uri));
+    }
+
+    SECTION("Parametrized requests on '/' must work") {
+
+        const std::string uri = "/123";
+        ratl::rest::Resource resource{"/<id>", "GET", RequestTest::default_handler};
+        CHECK(resource.match(uri));
+        ratl::rest::Request request{uri, resource.method, {}};
+        request.init(resource);
+        CHECK(request.getParameter<std::string>("id") == "123");
+    }
+
 }

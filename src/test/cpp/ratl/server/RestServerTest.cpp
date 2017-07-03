@@ -1,6 +1,8 @@
 #include <catch.hpp>
 
 #include <ratl/server/RestServer.h>
+#include <ratl/rest/RestAPI.h>
+
 #include <thread>
 
 #include "../../mock/MockNetIO.h"
@@ -10,7 +12,7 @@ using ratl::server::RestServer;
 // gmock
 using ::testing::NiceMock;
 
-TEST_CASE( "ServerTest" ) {
+TEST_CASE( "RestServerTest" ) {
 
     SECTION("Bind a server to an available address and port") {
         auto netIO = std::make_shared<MockNetIO>();
@@ -32,12 +34,32 @@ TEST_CASE( "ServerTest" ) {
 
     }
 
-    SECTION("Start a server after bind to an specific address and port") {
+    SECTION("Start a server after bind to an specific address and port without using an api") {
+        auto netIO = std::make_shared<NiceMock<MockNetIO>>();
+        EXPECT_CALL(*netIO, run()).Times(0);
 
-        std::shared_ptr<MockNetIO> netIO = std::make_shared<NiceMock<MockNetIO>>();
+        RestServer server{netIO};
+        server.bind("localhost", 8000);
+
+        CHECK_FALSE(server.isRunning());
+
+        CHECK_THROWS_AS(server.run(), std::logic_error);
+
+        CHECK_FALSE(server.isRunning());
+
+        CHECK(::testing::Mock::VerifyAndClearExpectations(netIO.get()));
+    }
+
+    SECTION("Start a server after bind to an specific address and port using an api") {
+        using ratl::rest::RestAPI;
+        auto netIO = std::make_shared<NiceMock<MockNetIO>>();
         EXPECT_CALL(*netIO, run()).Times(1);
 
         RestServer server{netIO};
+
+        std::unique_ptr<RestAPI> api{new RestAPI};
+        server.use(std::move(api));
+
         server.bind("localhost", 8000);
 
         CHECK_FALSE(server.isRunning());
@@ -53,7 +75,6 @@ TEST_CASE( "ServerTest" ) {
     SECTION("Stop a server that is not running") {
         auto netIO = std::make_shared<NiceMock<MockNetIO>>();
 
-
         RestServer server{netIO};
 
         CHECK_FALSE(server.isRunning());
@@ -63,10 +84,14 @@ TEST_CASE( "ServerTest" ) {
     }
 
     SECTION("Stop a server that started successfully and is running") {
+        using ratl::rest::RestAPI;
         auto netIO = std::make_shared<NiceMock<MockNetIO>>();
         EXPECT_CALL(*netIO, stop()).Times(1);
 
         RestServer server{netIO};
+        std::unique_ptr<RestAPI> api{new RestAPI};
+        server.use(std::move(api));
+
         server.bind("localhost", 8000);
 
         server.run();
