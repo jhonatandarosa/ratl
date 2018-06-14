@@ -1,9 +1,8 @@
 set(TARGET_NAME ${PROJECT_NAME})
 
+conan_init()
 
-if(_USE_BOOST_REGEX)
-    list(APPEND LIBS boost_regex)
-endif()
+list(APPEND LIBS nlohmann_json)
 
 add_source_directory(cpp SRCS HDRS)
 

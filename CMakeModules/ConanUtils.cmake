@@ -111,3 +111,18 @@ function(conan_install)
     endif()
     _conan_clear_configs()
 endfunction()
+
+
+macro(conan_init)
+    message("Conan init for project ${PROJECT_NAME}")
+    execute_process(
+            COMMAND conan install ${CMAKE_CURRENT_SOURCE_DIR}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            RESULT_VARIABLE EXIT_CODE
+    )
+    if (NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Conan install failed with exit code ${EXIT_CODE}")
+    else()
+        include(${CMAKE_CURRENT_BINARY_DIR}/conan_paths.cmake)
+    endif()
+endmacro()

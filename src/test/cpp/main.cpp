@@ -13,7 +13,7 @@ int main( int argc, char** argv )
 //    listeners.Append(new test::util::GMockCatchInterceptor());
 //    delete listeners.Release(listeners.default_result_printer());
 
-    int result = Catch::Session().run( argc, const_cast<const char**>(argv) );
+    int result = Catch::Session().run( argc, argv );
 
     // global clean-up...
 
