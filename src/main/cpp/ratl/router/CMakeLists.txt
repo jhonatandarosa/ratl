@@ -6,6 +6,7 @@ set(
         SRCS
         RTrie.cpp
         RTrieNode.cpp
+        RTrieMatch.cpp
         RTrieException.cpp
 )
 

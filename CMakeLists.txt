@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include(SourcesDirectories)
 include(ConanUtils)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-g -O0 --coverage")
 set(CMAKE_C_FLAGS "-g -O0 --coverage")
 

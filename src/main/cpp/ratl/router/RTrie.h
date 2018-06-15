@@ -2,11 +2,11 @@
 
 #include <string>
 
+#include "RTrieMatch.h"
 
 namespace ratl {
     namespace router {
         class RTrieException;
-        class RTrieNode;
 
         class RTrie {
 
@@ -16,7 +16,7 @@ namespace ratl {
 
             void insertPath(const std::string& path);
 
-            const RTrieNode* match(const std::string& path);
+            RTrieMatch match(const std::string& path);
 
 
         private:

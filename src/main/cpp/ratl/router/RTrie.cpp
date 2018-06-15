@@ -1,7 +1,9 @@
 #include "RTrie.h"
+
+#include <sstream>
+
 #include "RTrieException.h"
 #include "RTrieNode.h"
-#include <sstream>
 
 
 using namespace ratl::router;
@@ -46,7 +48,7 @@ void RTrie::insertPath(const std::string &path) {
 
         bool isArgumentToken = isArgument(token);
 
-        auto node = current->find(token);
+        auto node = current->findChild(token, isArgumentToken);
         if (node) {
             current = node;
         } else {
@@ -60,7 +62,7 @@ void RTrie::insertPath(const std::string &path) {
 }
 
 
-const RTrieNode* RTrie::match(const std::string& path) {
+RTrieMatch RTrie::match(const std::string& path) {
     std::string token;
     std::istringstream in(path);
 
@@ -71,9 +73,10 @@ const RTrieNode* RTrie::match(const std::string& path) {
         current = current->find(token);
     }
 
+
     if (current && current->isEndpoint()) {
-        return current;
+        return RTrieMatch{current};
     }
     // not found
-    return nullptr;
+    return RTrieMatch{};
 }

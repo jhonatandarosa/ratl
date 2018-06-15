@@ -18,7 +18,7 @@ namespace ratl {
             const RTrieNode* find(const std::string& token) const noexcept ;
 
         private:
-            RTrieNode* find(const std::string& token) noexcept ;
+            RTrieNode* findChild(const std::string& token, bool param) noexcept ;
             friend class RTrie;
 
         private:

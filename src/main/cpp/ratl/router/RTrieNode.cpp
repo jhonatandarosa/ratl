@@ -41,7 +41,11 @@ bool RTrieNode::isEndpoint() const noexcept {
 }
 
 void RTrieNode::append(RTrieNode* node) noexcept {
-    d->children.push_back(node);
+    if (node->d->param) {
+        d->children.push_back(node);
+    } else {
+        d->children.insert(d->children.begin(), node);
+    }
 }
 
 bool RTrieNode::match(const std::string& token) const noexcept {
@@ -58,9 +62,12 @@ const RTrieNode* RTrieNode::find(const std::string& token) const noexcept {
     return nullptr;
 }
 
-RTrieNode* RTrieNode::find(const std::string& token) noexcept {
+RTrieNode* RTrieNode::findChild(const std::string& token, bool param) noexcept {
     for (auto child : d->children) {
-        if (child->match(token)) {
+        if (child->d->value == token) {
+            return child;
+        }
+        if (param && child->d->param == param) {
             return child;
         }
     }

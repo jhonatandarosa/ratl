@@ -6,6 +6,16 @@
 using ratl::router::RTrie;
 using ratl::router::RTrieException;
 
+namespace Catch {
+    template<>
+    struct StringMaker<ratl::router::RTrieMatch> {
+        static std::string convert( ratl::router::RTrieMatch const& value ) {
+            return std::string("RTrieMatch{") + (value ? "true" : "false") +"}";
+        }
+    };
+}
+
+
 TEST_CASE( "RTrieTest" ) {
 
     RTrie rt;
@@ -23,8 +33,7 @@ TEST_CASE( "RTrieTest" ) {
     }
 
     SECTION("Match with empty trie should return no match") {
-        auto node = rt.match("/");
-        CHECK(node == nullptr);
+        CHECK_FALSE(rt.match("/"));
     }
 
     SECTION("Allow to insert root route") {
@@ -34,15 +43,13 @@ TEST_CASE( "RTrieTest" ) {
     SECTION("Match root route") {
         rt.insertPath("/");
 
-        auto node = rt.match("/");
-        CHECK(node != nullptr);
+        CHECK(rt.match("/"));
     }
 
-    SECTION("Match path not in trie should return nullptr") {
+    SECTION("Match path not in trie should return invalid match") {
         rt.insertPath("/");
 
-        auto node = rt.match("/simple");
-        CHECK(node == nullptr);
+        CHECK_FALSE(rt.match("/simple"));
     }
 
     SECTION("Allow to insert simple route") {
@@ -52,34 +59,45 @@ TEST_CASE( "RTrieTest" ) {
     SECTION("Match a simple route") {
         rt.insertPath("/simple");
 
-        auto node = rt.match("/simple");
-        CHECK(node != nullptr);
+        CHECK(rt.match("/simple"));
     }
 
     SECTION("Trailing '/' should make no difference") {
         rt.insertPath("/simple");
         rt.insertPath("/simple/");
 
-        auto node1 = rt.match("/simple");
-        CHECK(node1 != nullptr);
+        auto ctx1 = rt.match("/simple");
+        CHECK(ctx1);
 
-        auto node2 = rt.match("/simple/");
-        CHECK(node2 != nullptr);
+        auto ctx2 = rt.match("/simple/");
+        CHECK(ctx2);
 
-        CHECK(node1 == node2);
+        CHECK(ctx1 == ctx2);
     }
 
-    SECTION("Two simple routes must be on different nodes") {
+    SECTION("Two simple routes must be on different contexts") {
         rt.insertPath("/simple1");
         rt.insertPath("/simple2");
 
-        auto nodeSimple1 = rt.match("/simple1");
-        CHECK(nodeSimple1 != nullptr);
+        auto ctx1 = rt.match("/simple1");
+        CHECK(ctx1);
 
-        auto nodeSimple2 = rt.match("/simple2");
-        CHECK(nodeSimple2 != nullptr);
+        auto ctx2 = rt.match("/simple2");
+        CHECK(ctx2);
 
-        CHECK(nodeSimple1 != nodeSimple2);
+        CHECK(ctx1 != ctx2);
+    }
+
+    SECTION("Two matchs of the same route must be on the same context") {
+        rt.insertPath("/simple");
+
+        auto ctx1 = rt.match("/simple");
+        CHECK(ctx1);
+
+        auto ctx2 = rt.match("/simple");
+        CHECK(ctx2);
+
+        CHECK(ctx1 == ctx2);
     }
 
     SECTION("Match a route with multiple components") {
@@ -98,56 +116,56 @@ TEST_CASE( "RTrieTest" ) {
         rt.insertPath("/a/b/c/d/e/f/g/h/i/j/k");
         rt.insertPath("/a/b/c/d/e/f/g/h/i/j/k/l");
 
-        CHECK(rt.match("/a") != nullptr);
-        CHECK(rt.match("/a/b") != nullptr);
-        CHECK(rt.match("/a/c") != nullptr);
-        CHECK(rt.match("/a/d") != nullptr);
-        CHECK(rt.match("/a/b/c") != nullptr);
-        CHECK(rt.match("/a/b/c/d") != nullptr);
-        CHECK(rt.match("/a/b/c/d/e") != nullptr);
-        CHECK(rt.match("/a/b/c/d/e/f") != nullptr);
-        CHECK(rt.match("/a/b/c/d/e/f/g") != nullptr);
-        CHECK(rt.match("/a/b/c/d/e/f/g/h") != nullptr);
-        CHECK(rt.match("/a/b/c/d/e/f/g/h/i") != nullptr);
-        CHECK(rt.match("/a/b/c/d/e/f/g/h/i/j") != nullptr);
-        CHECK(rt.match("/a/b/c/d/e/f/g/h/i/j/k") != nullptr);
-        CHECK(rt.match("/a/b/c/d/e/f/g/h/i/j/k/l") != nullptr);
+        CHECK(rt.match("/a"));
+        CHECK(rt.match("/a/b"));
+        CHECK(rt.match("/a/c"));
+        CHECK(rt.match("/a/d"));
+        CHECK(rt.match("/a/b/c"));
+        CHECK(rt.match("/a/b/c/d"));
+        CHECK(rt.match("/a/b/c/d/e"));
+        CHECK(rt.match("/a/b/c/d/e/f"));
+        CHECK(rt.match("/a/b/c/d/e/f/g"));
+        CHECK(rt.match("/a/b/c/d/e/f/g/h"));
+        CHECK(rt.match("/a/b/c/d/e/f/g/h/i"));
+        CHECK(rt.match("/a/b/c/d/e/f/g/h/i/j"));
+        CHECK(rt.match("/a/b/c/d/e/f/g/h/i/j/k"));
+        CHECK(rt.match("/a/b/c/d/e/f/g/h/i/j/k/l"));
     }
 
     SECTION("Match a route with a simple argument") {
         rt.insertPath("/simple/<arg>");
 
-        CHECK(rt.match("/simple") == nullptr);
-        CHECK(rt.match("/simple/") == nullptr);
+        CHECK_FALSE(rt.match("/simple"));
+        CHECK_FALSE(rt.match("/simple/"));
 
-        CHECK(rt.match("/simple/value") != nullptr);
+        CHECK(rt.match("/simple/value"));
     }
 
     SECTION("Match a route with a simple argument in the middle") {
         rt.insertPath("/simple/<arg>/inthemiddle");
 
-        CHECK(rt.match("/simple") == nullptr);
-        CHECK(rt.match("/simple/") == nullptr);
-        CHECK(rt.match("/simple/value") == nullptr);
+        CHECK_FALSE(rt.match("/simple"));
+        CHECK_FALSE(rt.match("/simple/"));
+        CHECK_FALSE(rt.match("/simple/value"));
 
-        CHECK(rt.match("/simple/value/inthemiddle") != nullptr);
+        CHECK(rt.match("/simple/value/inthemiddle"));
     }
 
     SECTION("Prefer routes with least arguments") {
         rt.insertPath("/simple/<arg1>/<arg2>");
         rt.insertPath("/simple/<arg>/least_arguments");
 
-        CHECK(rt.match("/simple") == nullptr);
-        CHECK(rt.match("/simple/") == nullptr);
-        CHECK(rt.match("/simple/value") == nullptr);
+        CHECK_FALSE(rt.match("/simple"));
+        CHECK_FALSE(rt.match("/simple/"));
+        CHECK_FALSE(rt.match("/simple/value"));
 
-        auto nodeLeastArguments = rt.match("/simple/value/least_arguments");
-        CHECK(nodeLeastArguments != nullptr);
+        auto ctxLeastArguments = rt.match("/simple/value/least_arguments");
+        CHECK(ctxLeastArguments);
 
-        auto nodeTwoArguments = rt.match("/simple/value/value2");
-        CHECK(nodeTwoArguments != nullptr);
+        auto ctxTwoArguments = rt.match("/simple/value/value2");
+        CHECK(ctxTwoArguments);
 
-        CHECK(nodeLeastArguments != nodeTwoArguments);
+        CHECK(ctxLeastArguments != ctxTwoArguments);
     }
 
 //    SECTION("Match /simple/<arg>") {
