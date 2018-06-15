@@ -132,13 +132,28 @@ TEST_CASE( "RTrieTest" ) {
         CHECK(rt.match("/a/b/c/d/e/f/g/h/i/j/k/l"));
     }
 
+    SECTION("A RTrieMatch of a route without parameters must have no parameters inside") {
+        rt.insertPath("/noargs");
+
+        auto ctx = rt.match("/noargs");
+        CHECK(ctx);
+
+        CHECK(ctx.params().empty());
+    }
+
     SECTION("Match a route with a simple argument") {
         rt.insertPath("/simple/<arg>");
 
         CHECK_FALSE(rt.match("/simple"));
         CHECK_FALSE(rt.match("/simple/"));
 
-        CHECK(rt.match("/simple/value"));
+        auto ctx = rt.match("/simple/value");
+        CHECK(ctx);
+
+        REQUIRE_FALSE(ctx.params().empty());
+
+        auto value = ctx.params().at("arg");
+        CHECK(value == "value");
     }
 
     SECTION("Match a route with a simple argument in the middle") {
@@ -148,7 +163,13 @@ TEST_CASE( "RTrieTest" ) {
         CHECK_FALSE(rt.match("/simple/"));
         CHECK_FALSE(rt.match("/simple/value"));
 
-        CHECK(rt.match("/simple/value/inthemiddle"));
+        auto ctx = rt.match("/simple/value/inthemiddle");
+        CHECK(ctx);
+
+        REQUIRE_FALSE(ctx.params().empty());
+
+        auto value = ctx.params().at("arg");
+        CHECK(value == "value");
     }
 
     SECTION("Prefer routes with least arguments") {
@@ -162,8 +183,16 @@ TEST_CASE( "RTrieTest" ) {
         auto ctxLeastArguments = rt.match("/simple/value/least_arguments");
         CHECK(ctxLeastArguments);
 
+        auto value = ctxLeastArguments.params().at("arg");
+        CHECK(value == "value");
+
         auto ctxTwoArguments = rt.match("/simple/value/value2");
         CHECK(ctxTwoArguments);
+
+        auto v1 = ctxTwoArguments.params().at("arg1");
+        CHECK(v1 == "value");
+        auto v2 = ctxTwoArguments.params().at("arg2");
+        CHECK(v2 == "value2");
 
         CHECK(ctxLeastArguments != ctxTwoArguments);
     }

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <unordered_map>
+
 namespace ratl {
     namespace router {
         class RTrieNode;
@@ -7,7 +10,7 @@ namespace ratl {
         class RTrieMatch {
             friend class RTrie;
 
-            explicit RTrieMatch(const RTrieNode*const node = nullptr);
+            RTrieMatch();
 
         public:
 
@@ -28,6 +31,14 @@ namespace ratl {
             // bool related operators
             explicit operator bool() const;
             bool operator !() const;
+
+
+            // param related
+            const std::unordered_map<std::string, std::string>& params() const noexcept ;
+
+        private:
+            void addParameter(const std::string& name, const std::string& value) noexcept ;
+            void validated(const RTrieNode*node) noexcept ;
 
         private:
             class Data;

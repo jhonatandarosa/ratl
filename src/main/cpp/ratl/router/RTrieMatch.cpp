@@ -5,15 +5,13 @@ using namespace ratl::router;
 
 class RTrieMatch::Data {
 public:
-    Data(const RTrieNode* const node_)
-        :node(node_)
-    {}
 
-    const RTrieNode* const node;
+    const RTrieNode* node{};
+    std::unordered_map<std::string, std::string> params{};
 };
 
-RTrieMatch::RTrieMatch(const RTrieNode* const node)
-    : d(new Data{node})
+RTrieMatch::RTrieMatch()
+    : d(new Data)
 {
 }
 
@@ -47,4 +45,16 @@ RTrieMatch::operator bool() const {
 
 bool RTrieMatch::operator!() const {
     return !this;
+}
+
+const std::unordered_map<std::string, std::string>& RTrieMatch::params() const noexcept {
+    return d->params;
+}
+
+void RTrieMatch::addParameter(const std::string& name, const std::string& value) noexcept {
+    d->params.insert({name, value});
+}
+
+void RTrieMatch::validated(const RTrieNode* node) noexcept {
+    d->node = node;
 }

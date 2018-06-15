@@ -1,16 +1,13 @@
 #include "RTrie.h"
 
 #include <sstream>
+#include <algorithm>
 
 #include "RTrieException.h"
 #include "RTrieNode.h"
 
 
 using namespace ratl::router;
-
-bool isArgument(const std::string& token) {
-    return token[0] == '<' && token[token.size()-1] == '>';
-}
 
 class RTrie::Data {
 public:
@@ -46,13 +43,11 @@ void RTrie::insertPath(const std::string &path) {
             throw RTrieException("empty token");
         }
 
-        bool isArgumentToken = isArgument(token);
-
-        auto node = current->findChild(token, isArgumentToken);
+        auto node = current->findChild(token);
         if (node) {
             current = node;
         } else {
-            node = new RTrieNode(token, isArgumentToken);
+            node = new RTrieNode(token);
             current->append(node);
             current = node;
         }
@@ -69,13 +64,23 @@ RTrieMatch RTrie::match(const std::string& path) {
     std::getline(in, token, '/');
     const RTrieNode* current = &d->root;
 
-    while (current && std::getline(in, token, '/')) {
+    RTrieMatch match;
+
+    while (std::getline(in, token, '/')) {
         current = current->find(token);
+        if (!current) break;
+
+        if (current->isParameterNode()) {
+            auto names = current->names();
+            std::for_each(names.begin(), names.end(), [&](const auto& name){
+                match.addParameter(name, token);
+            });
+        }
     }
 
-
     if (current && current->isEndpoint()) {
-        return RTrieMatch{current};
+        match.validated(current);
+        return match;
     }
     // not found
     return RTrieMatch{};
