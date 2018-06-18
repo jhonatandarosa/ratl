@@ -194,7 +194,7 @@ TEST_CASE( "RTrieTest" ) {
     }
 
     SECTION("Prefer routes with least parameters") {
-        rt.insertPath("/simple/<arg1>/<arg2>");
+        rt.insertPath("/simple/<arg>/<arg2>");
         rt.insertPath("/simple/<arg>/least_arguments");
 
         CHECK_FALSE(rt.match("/simple"));
@@ -210,7 +210,7 @@ TEST_CASE( "RTrieTest" ) {
         auto ctxTwoArguments = rt.match("/simple/value/value2");
         CHECK(ctxTwoArguments);
 
-        auto v1 = ctxTwoArguments.params().at("arg1");
+        auto v1 = ctxTwoArguments.params().at("arg");
         CHECK(v1 == "value");
         auto v2 = ctxTwoArguments.params().at("arg2");
         CHECK(v2 == "value2");
@@ -230,9 +230,11 @@ TEST_CASE( "RTrieTest" ) {
         CHECK_THROWS_MATCHES(rt.insertPath("/simple/<arg1>/<arg2>"), RTrieException, ExceptionMatcher{"Duplicated route path"});
     }
 
-    SECTION("Routes with shared parameter's name should not interferer with each other") {
+    SECTION("Routes with shared parameter's should have same <name:pattern> for each parameter") {
         rt.insertPath("/simple/<arg1>/<arg2>/first");
-        rt.insertPath("/simple/<arg2>/<arg1>/second");
+
+        CHECK_THROWS_MATCHES(rt.insertPath("/simple/<arg2>/<arg1>/second"), RTrieException, ExceptionMatcher{"Parameters node on the same point must have same <name:pattern>"});
+        CHECK_NOTHROW(rt.insertPath("/simple/<arg1>/<arg2>/second"));
 
         auto ctxFirst = rt.match("/simple/v1/v2/first");
         CHECK(ctxFirst);
@@ -242,13 +244,13 @@ TEST_CASE( "RTrieTest" ) {
         auto v2 = ctxFirst.params().at("arg2");
         CHECK(v2 == "v2");
 
-        auto ctxSecond = rt.match("/simple/v1/v2/second");
+        auto ctxSecond = rt.match("/simple/v3/v4/second");
         CHECK(ctxSecond);
 
-        v1 = ctxSecond.params().at("arg2");
-        CHECK(v1 == "v1");
-        v2 = ctxSecond.params().at("arg1");
-        CHECK(v2 == "v2");
+        v1 = ctxSecond.params().at("arg1");
+        CHECK(v1 == "v3");
+        v2 = ctxSecond.params().at("arg2");
+        CHECK(v2 == "v4");
     }
 
 //    SECTION("Match /simple/<arg>") {

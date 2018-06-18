@@ -81,10 +81,11 @@ RTrieMatch RTrie::match(const std::string& path) {
         if (!current) break;
 
         if (current->isParameterNode()) {
-            auto names = current->names();
-            std::for_each(names.begin(), names.end(), [&](const auto& name){
-                match.addParameter(name, token);
-            });
+            match.addParameter(current->name(), token);
+//            auto names = current->names();
+//            std::for_each(names.begin(), names.end(), [&](const auto& name){
+//                match.addParameter(name, token);
+//            });
         }
     }
 

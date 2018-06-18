@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 namespace ratl {
     namespace router {
@@ -20,10 +19,10 @@ namespace ratl {
             const RTrieNode* find(const std::string& token) const noexcept ;
 
             bool isParameterNode() const noexcept ;
-            const std::vector<std::string>& names() const noexcept ;
+            const std::string& name() const noexcept ;
 
         private:
-            RTrieNode* findChild(const std::string& token) noexcept ;
+            RTrieNode* findChild(const std::string& token) ;
 
             friend class RTrie;
 

@@ -1,4 +1,7 @@
 #include "RTrieNode.h"
+#include "RTrieException.h"
+
+#include <vector>
 
 using namespace ratl::router;
 
@@ -21,7 +24,7 @@ public:
 
     Data(const std::string& value)
         : value(value)
-        , names()
+        , name()
         , pattern()
         , param(isParameterToken(value))
         , endpoint(false)
@@ -33,7 +36,7 @@ public:
     }
 
     std::string value;
-    std::vector<std::string> names;
+    std::string name;
     std::string pattern;
     bool param;
     bool endpoint;
@@ -42,7 +45,7 @@ public:
 
     void initParamData() {
         auto tokenData = extractTokenData(value);
-        names.push_back(tokenData.name);
+        name = tokenData.name;
         pattern = tokenData.pattern;
     }
 };
@@ -93,11 +96,11 @@ bool RTrieNode::isParameterNode() const noexcept {
     return d->param;
 }
 
-const std::vector<std::string>& RTrieNode::names() const noexcept {
-    return d->names;
+const std::string& RTrieNode::name() const noexcept {
+    return d->name;
 }
 
-RTrieNode* RTrieNode::findChild(const std::string& token) noexcept {
+RTrieNode* RTrieNode::findChild(const std::string& token) {
     auto isParamToken = isParameterToken(token);
     for (auto child : d->children) {
         if (child->d->value == token) {
@@ -105,9 +108,10 @@ RTrieNode* RTrieNode::findChild(const std::string& token) noexcept {
         }
         if (isParamToken && child->d->param) {
             auto tokenData = extractTokenData(token);
-            //FIXME change this code, it's awkward
-            if (tokenData.pattern == child->d->pattern) {
-                child->d->names.push_back(tokenData.name);
+            if (tokenData.name == child->d->name || tokenData.pattern == child->d->pattern) {
+                if (tokenData.name != child->d->name || tokenData.pattern != child->d->pattern) {
+                    throw RTrieException("Parameters node on the same point must have same <name:pattern>");
+                }
                 return child;
             }
         }
