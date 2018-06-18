@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <unordered_set>
 
 #include "RTrieException.h"
 #include "RTrieNode.h"
@@ -37,22 +38,31 @@ void RTrie::insertPath(const std::string &path) {
     std::istringstream in(path);
     RTrieNode* current = &d->root;
     std::getline(in, token, '/');
+    std::unordered_set<std::string> tokens;
 
     while (std::getline(in, token, '/')) {
         if (token.empty()) {
-            throw RTrieException("empty token");
+            throw RTrieException("Invalid path");
         }
 
         auto node = current->findChild(token);
         if (node) {
             current = node;
         } else {
-            node = new RTrieNode(token);
-            current->append(node);
-            current = node;
+            if (tokens.insert(token).second) {
+                node = new RTrieNode(token);
+                current->append(node);
+                current = node;
+            } else {
+                throw RTrieException("Duplicated parameter name");
+            }
         }
     }
-
+    if (current->isEndpoint() &&
+        path[path.size()-1] != '/')// ignore trailing '/'
+    {
+        throw RTrieException("Duplicated route path");
+    }
     current->setEndpoint(true);
 }
 

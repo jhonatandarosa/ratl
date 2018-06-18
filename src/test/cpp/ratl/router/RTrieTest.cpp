@@ -13,7 +13,28 @@ namespace Catch {
             return std::string("RTrieMatch{") + (value ? "true" : "false") +"}";
         }
     };
+
+    template<>
+    struct StringMaker<ratl::router::RTrieException> {
+        static std::string convert( ratl::router::RTrieException const& value ) {
+            return std::string("RTrieException{") + value.what() +"}";
+        }
+    };
 }
+
+class ExceptionMatcher : public Catch::MatcherBase<RTrieException> {
+    const std::string& m_expected;
+public:
+    ExceptionMatcher(const std::string& msg) : m_expected(msg) {}
+
+    bool match(RTrieException const &se) const override {
+        return se.what() == m_expected;
+    }
+
+    std::string describe() const override {
+        return "RTrieException{" + m_expected + "}";
+    }
+};
 
 
 TEST_CASE( "RTrieTest" ) {
@@ -21,15 +42,15 @@ TEST_CASE( "RTrieTest" ) {
     RTrie rt;
 
     SECTION("Empty paths should throw exceptions") {
-        CHECK_THROWS_AS(rt.insertPath(""), RTrieException);
+        CHECK_THROWS_MATCHES(rt.insertPath(""), RTrieException, ExceptionMatcher{"Invalid path"});
     }
 
     SECTION("Invalid paths should throw exceptions") {
-        CHECK_THROWS(rt.insertPath(" "));
-        CHECK_THROWS(rt.insertPath("312312"));
-        CHECK_THROWS(rt.insertPath("adasda"));
-        CHECK_THROWS(rt.insertPath("haud12312"));
-        CHECK_THROWS(rt.insertPath("//"));
+        CHECK_THROWS_MATCHES(rt.insertPath(" "), RTrieException, ExceptionMatcher{"Invalid path"});
+        CHECK_THROWS_MATCHES(rt.insertPath("312312"), RTrieException, ExceptionMatcher{"Invalid path"});
+        CHECK_THROWS_MATCHES(rt.insertPath("adasda"), RTrieException, ExceptionMatcher{"Invalid path"});
+        CHECK_THROWS_MATCHES(rt.insertPath("haud12312"), RTrieException, ExceptionMatcher{"Invalid path"});
+        CHECK_THROWS_MATCHES(rt.insertPath("//"), RTrieException, ExceptionMatcher{"Invalid path"});
     }
 
     SECTION("Match with empty trie should return no match") {
@@ -141,7 +162,7 @@ TEST_CASE( "RTrieTest" ) {
         CHECK(ctx.params().empty());
     }
 
-    SECTION("Match a route with a simple argument") {
+    SECTION("Match a route with a simple parameter") {
         rt.insertPath("/simple/<arg>");
 
         CHECK_FALSE(rt.match("/simple"));
@@ -156,7 +177,7 @@ TEST_CASE( "RTrieTest" ) {
         CHECK(value == "value");
     }
 
-    SECTION("Match a route with a simple argument in the middle") {
+    SECTION("Match a route with a simple parameter in the middle") {
         rt.insertPath("/simple/<arg>/inthemiddle");
 
         CHECK_FALSE(rt.match("/simple"));
@@ -172,7 +193,7 @@ TEST_CASE( "RTrieTest" ) {
         CHECK(value == "value");
     }
 
-    SECTION("Prefer routes with least arguments") {
+    SECTION("Prefer routes with least parameters") {
         rt.insertPath("/simple/<arg1>/<arg2>");
         rt.insertPath("/simple/<arg>/least_arguments");
 
@@ -195,6 +216,39 @@ TEST_CASE( "RTrieTest" ) {
         CHECK(v2 == "value2");
 
         CHECK(ctxLeastArguments != ctxTwoArguments);
+    }
+
+    SECTION("Should not allow to add routes with duplicated parameter name") {
+        CHECK_THROWS_MATCHES(rt.insertPath("/duplicated/<arg>/<arg>"), RTrieException, ExceptionMatcher{"Duplicated parameter name"});
+    }
+
+    SECTION("Should not allow to add routes duplicated paths") {
+        rt.insertPath("/simple");
+        CHECK_THROWS_MATCHES(rt.insertPath("/simple"), RTrieException, ExceptionMatcher{"Duplicated route path"});
+
+        rt.insertPath("/simple/<arg1>/<arg2>");
+        CHECK_THROWS_MATCHES(rt.insertPath("/simple/<arg1>/<arg2>"), RTrieException, ExceptionMatcher{"Duplicated route path"});
+    }
+
+    SECTION("Routes with shared parameter's name should not interferer with each other") {
+        rt.insertPath("/simple/<arg1>/<arg2>/first");
+        rt.insertPath("/simple/<arg2>/<arg1>/second");
+
+        auto ctxFirst = rt.match("/simple/v1/v2/first");
+        CHECK(ctxFirst);
+
+        auto v1 = ctxFirst.params().at("arg1");
+        CHECK(v1 == "v1");
+        auto v2 = ctxFirst.params().at("arg2");
+        CHECK(v2 == "v2");
+
+        auto ctxSecond = rt.match("/simple/v1/v2/second");
+        CHECK(ctxSecond);
+
+        v1 = ctxSecond.params().at("arg2");
+        CHECK(v1 == "v1");
+        v2 = ctxSecond.params().at("arg1");
+        CHECK(v2 == "v2");
     }
 
 //    SECTION("Match /simple/<arg>") {
