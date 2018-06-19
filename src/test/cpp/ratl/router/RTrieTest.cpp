@@ -230,10 +230,10 @@ TEST_CASE( "RTrieTest" ) {
         CHECK_THROWS_MATCHES(rt.insertPath("/simple/<arg1>/<arg2>"), RTrieException, ExceptionMatcher{"Duplicated route path"});
     }
 
-    SECTION("Routes with shared parameter's should have same <name:pattern> for each parameter") {
+    SECTION("Routes with shared parameter's should have same <pattern:name> for each parameter") {
         rt.insertPath("/simple/<arg1>/<arg2>/first");
 
-        CHECK_THROWS_MATCHES(rt.insertPath("/simple/<arg2>/<arg1>/second"), RTrieException, ExceptionMatcher{"Parameters node on the same point must have same <name:pattern>"});
+        CHECK_THROWS_MATCHES(rt.insertPath("/simple/<arg2>/<arg1>/second"), RTrieException, ExceptionMatcher{"Parameters node on the same point must have same <pattern:name>"});
         CHECK_NOTHROW(rt.insertPath("/simple/<arg1>/<arg2>/second"));
 
         auto ctxFirst = rt.match("/simple/v1/v2/first");
@@ -253,14 +253,40 @@ TEST_CASE( "RTrieTest" ) {
         CHECK(v2 == "v4");
     }
 
-//    SECTION("Match /simple/<arg>") {
-//        CHECK(false);
-//    }
-//
-//    SECTION("Match /multiple/<simple>/<args>") {
-//        CHECK(false);
-//    }
-//
+    SECTION("Match a route with a int typed parameter") {
+        rt.insertPath("/simple/<int:arg>");
+
+        CHECK_FALSE(rt.match("/simple"));
+        CHECK_FALSE(rt.match("/simple/"));
+        CHECK_FALSE(rt.match("/simple/value"));
+        CHECK_FALSE(rt.match("/simple/123.45"));
+
+        auto ctx = rt.match("/simple/123");
+        CHECK(ctx);
+
+        REQUIRE_FALSE(ctx.params().empty());
+
+        auto value = ctx.params().at("arg");
+        CHECK(value == "123");
+    }
+
+    SECTION("Match a route with a int typed parameter in the middle") {
+        rt.insertPath("/simple/<int:arg>/middle");
+
+        CHECK_FALSE(rt.match("/simple"));
+        CHECK_FALSE(rt.match("/simple/"));
+        CHECK_FALSE(rt.match("/simple/value/middle"));
+        CHECK_FALSE(rt.match("/simple/123.45/middle"));
+
+        auto ctx = rt.match("/simple/123/middle");
+        CHECK(ctx);
+
+        REQUIRE_FALSE(ctx.params().empty());
+
+        auto value = ctx.params().at("arg");
+        CHECK(value == "123");
+    }
+
 //    SECTION("Match /typed/<int:arg>") {
 //        CHECK(false);
 //    }

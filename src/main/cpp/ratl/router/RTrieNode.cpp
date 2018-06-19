@@ -2,8 +2,12 @@
 #include "RTrieException.h"
 
 #include <vector>
+#include <unordered_map>
+#include <regex>
 
 using namespace ratl::router;
+
+
 
 struct TokenData {
     std::string name;
@@ -15,20 +19,36 @@ bool isParameterToken(const std::string &token) {
 }
 
 TokenData extractTokenData(const std::string& token) {
-    auto name = token.substr(1, token.size() - 2);
-    return {name, ""};
+
+    static std::unordered_map<std::string, std::string> PATTERNS{{"int", "\\d+"}};
+
+    auto data = token.substr(1, token.size() - 2);
+    std::string name = data;
+    std::string pattern = ".+";
+    auto idx = data.find(':');
+    if (idx != std::string::npos) {
+        pattern = data.substr(0, idx);
+        name = data.substr(idx+1);
+        auto it = PATTERNS.find(pattern);
+        if (it != PATTERNS.end()) {
+            pattern = it->second;
+        }
+
+    }
+    return {name, pattern};
 }
 
 class RTrieNode::Data {
 public:
 
-    Data(const std::string& value)
+    explicit Data(const std::string& value)
         : value(value)
         , name()
         , pattern()
         , param(isParameterToken(value))
         , endpoint(false)
         , children()
+        , rx()
     {
         if (param) {
             initParamData();
@@ -41,12 +61,14 @@ public:
     bool param;
     bool endpoint;
     std::vector<RTrieNode*> children;
+    std::regex rx;
 
 
     void initParamData() {
         auto tokenData = extractTokenData(value);
         name = tokenData.name;
         pattern = tokenData.pattern;
+        rx = std::regex(pattern);
     }
 };
 
@@ -79,7 +101,9 @@ void RTrieNode::append(RTrieNode* node) noexcept {
 }
 
 bool RTrieNode::match(const std::string& token) const noexcept {
-    if (d->param) return true;
+    if (d->param) {
+        return std::regex_match(token, d->rx);
+    }
     return d->value == token;
 }
 
@@ -110,7 +134,7 @@ RTrieNode* RTrieNode::findChild(const std::string& token) {
             auto tokenData = extractTokenData(token);
             if (tokenData.name == child->d->name || tokenData.pattern == child->d->pattern) {
                 if (tokenData.name != child->d->name || tokenData.pattern != child->d->pattern) {
-                    throw RTrieException("Parameters node on the same point must have same <name:pattern>");
+                    throw RTrieException("Parameters node on the same point must have same <pattern:name>");
                 }
                 return child;
             }
