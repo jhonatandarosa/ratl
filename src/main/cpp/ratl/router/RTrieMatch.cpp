@@ -25,10 +25,10 @@ RTrieMatch::RTrieMatch(RTrieMatch&& rhs) noexcept
     rhs.d = nullptr;
 }
 
-RTrieMatch& RTrieMatch::operator=(RTrieMatch&& rhs) noexcept {
-    std::swap(d, rhs.d);
-    return *this;
-}
+//RTrieMatch& RTrieMatch::operator=(RTrieMatch&& rhs) noexcept {
+//    std::swap(d, rhs.d);
+//    return *this;
+//}
 
 bool RTrieMatch::operator==(const RTrieMatch &rhs) const {
     return d->node == rhs.d->node;
@@ -44,7 +44,7 @@ RTrieMatch::operator bool() const {
 }
 
 bool RTrieMatch::operator!() const {
-    return !this;
+    return d->node == nullptr;
 }
 
 const std::unordered_map<std::string, std::string>& RTrieMatch::params() const noexcept {

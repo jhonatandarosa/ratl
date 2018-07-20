@@ -18,7 +18,7 @@ namespace ratl {
 
             // move
             RTrieMatch(RTrieMatch&& rhs) noexcept ;
-            RTrieMatch& operator=(RTrieMatch&& rhs) noexcept ;
+            RTrieMatch& operator=(RTrieMatch&& rhs) = delete;
 
             // disable copy
             RTrieMatch(const RTrieMatch& rhs) = delete;

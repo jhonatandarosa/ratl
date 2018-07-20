@@ -67,6 +67,13 @@ TEST_CASE( "RTrieTest" ) {
         CHECK(rt.match("/"));
     }
 
+    SECTION("Possibility to validate a match with the bool operator and the negate operator") {
+        rt.insertPath("/");
+
+        CHECK(rt.match("/"));
+        CHECK((!rt.match("/test")));
+    }
+
     SECTION("Match path not in trie should return invalid match") {
         rt.insertPath("/");
 
@@ -270,13 +277,32 @@ TEST_CASE( "RTrieTest" ) {
         CHECK(value == "123");
     }
 
-    SECTION("Match a route with a int typed parameter in the middle") {
-        rt.insertPath("/simple/<int:arg>/middle");
+//    SECTION("Match a route with a int typed parameter in the middle") {
+//        rt.insertPath("/simple/<int:arg>/middle");
+//
+//        CHECK_FALSE(rt.match("/simple"));
+//        CHECK_FALSE(rt.match("/simple/"));
+//        CHECK_FALSE(rt.match("/simple/value/middle"));
+//        CHECK_FALSE(rt.match("/simple/123.45/middle"));
+//
+//        auto ctx = rt.match("/simple/123/middle");
+//        CHECK(ctx);
+//
+//        REQUIRE_FALSE(ctx.params().empty());
+//
+//        auto value = ctx.params().at("arg");
+//        CHECK(value == "123");
+//    }
+
+    /*
+    SECTION("Prefer routes with typed parameters") {
+        rt.insertPath("/simple/<int:arg>/typed");
+        rt.insertPath("/simple/<arg>/default");
 
         CHECK_FALSE(rt.match("/simple"));
         CHECK_FALSE(rt.match("/simple/"));
-        CHECK_FALSE(rt.match("/simple/value/middle"));
-        CHECK_FALSE(rt.match("/simple/123.45/middle"));
+        CHECK(rt.match("/simple/value/typed"));
+        CHECK(rt.match("/simple/123.45/default"));
 
         auto ctx = rt.match("/simple/123/middle");
         CHECK(ctx);
@@ -285,7 +311,7 @@ TEST_CASE( "RTrieTest" ) {
 
         auto value = ctx.params().at("arg");
         CHECK(value == "123");
-    }
+    }*/
 
 //    SECTION("Match /typed/<int:arg>") {
 //        CHECK(false);

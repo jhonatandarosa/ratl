@@ -16,6 +16,7 @@ int main(int argc, char** argv) {
     using ratl::rest::Request;
     using ratl::rest::Response;
     std::unique_ptr<Router> router{new Router{}};
+
     router->route("/", "GET", [](const Request& req) -> Response {
         return Response::ok({{"foo","bar"}});
     });
